@@ -1,27 +1,29 @@
-# QuickEmbedding⚡️⚡️⚡️
-An improvement on Textual Inversion embedding training leveraging a clip loss. 
-on A100 this has gotten me down from ~20 minutes to train to getting solid results in 20 seconds
+# SGDImagePrompt
+A Training-free method for prompting Stable Diffusion with an image, leveraging the fact that our text encoder is already aligned
+with image distribution via CLIP training.
+With this insight we can run gradient descent on the prompt embeddings, using its alignment with the CLIP image embedding as a loss.
 
-As noted in CustomDiffusion, Textual inversion suffers from poor image/text alignment compared to other methods while also taking considerably long to train with a loss that does not have such a smooth convergence.
-For that reason I propose splitting the training run into two phases, where the first phase is just a cosine similarity loss between CLIP text and image outputs. I precompute the embeddings, so the only model in memory is the text encoder.
-Thus, This can be done extremely quickly and requires little VRAM.
-
-In fact, this actually works pretty well on its own, but it doesn't entirely cater to how the diffusion model ultimately handles things, so we can do a second phase of training which is just vanilla textual inversion.
-We can think of the first phase as getting us 99% of the way there and letting regular textual inversion do the last 1% for us.
 
 # Setup 🛠
 ```
 pip install -r requirements.txt
 ```
 
-# Training 🧪
-```
-python train.py
-```
-
-That's really it, you can modify training settings in train_config.py
 
 # Inference 🚀
-For inference, use the load_embeds function in utils.py which takes a Diffusers StableDiffusionPipeline and a directory where you keep your embeddings as input
-and voila, see the notebook for an example
+See the provided notebook
+
+# Settings
+The opimize_chunk function will train an additional set of tokens to append to the end of your prompt. 
+Meanwhile, optimize_prompt will replace your prompt.
+- anchor_factor: higher values will try to better preserve the original prompt
+- use_negative_prompt: whether to also optimize the negative prompt
+- steps: optimization steps
+- lr: learning rate
+- optimizer: optimizer to use
+- actual_eof: which token to use for CLIP loss, normally it is one token position beyond the length of your prompt, if False, it will be the final token
+- clip_num: For SDXL, signals whether we're using the vision encoder for vitl14 or the open-clip vitg
+- lr_penalty: amount to reduce lr if we find that the loss is increasing
+- modality_gap_embed: an attempt to close CLIP's modality gap, this involves creating a mean of CLIP image embeddings and CLIP text embeddings, the difference between these two is what would be provided
+- isolate_subject: isolate the subject via attention masking, mask estimated by rembg background removal
 
