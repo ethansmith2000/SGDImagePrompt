@@ -3,6 +3,7 @@ A Training-free method for prompting Stable Diffusion with an image, leveraging 
 with image distribution via CLIP training.
 With this insight we can run gradient descent on the prompt embeddings, using its alignment with the CLIP image embedding as a loss.
 
+Also check out the related [QuickEmbedding](https://github.com/ethansmith2000/QuickEmbedding/tree/master)
 
 # Setup 🛠
 ```
